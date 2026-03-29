@@ -148,7 +148,6 @@ app.post("/save", async (req, res) => {
 });
 app.get('/init', async (req, res) => {
   try {
-    // create lists table (correct column name)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lists (
         id SERIAL PRIMARY KEY,
@@ -157,7 +156,6 @@ app.get('/init', async (req, res) => {
       );
     `);
 
-    // create cards table (needed for your app)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS cards (
         id SERIAL PRIMARY KEY,
@@ -169,7 +167,6 @@ app.get('/init', async (req, res) => {
       );
     `);
 
-    // create labels table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS labels (
         id SERIAL PRIMARY KEY,
@@ -178,7 +175,6 @@ app.get('/init', async (req, res) => {
       );
     `);
 
-    // create card_labels table
     await pool.query(`
       CREATE TABLE IF NOT EXISTS card_labels (
         id SERIAL PRIMARY KEY,
@@ -187,7 +183,6 @@ app.get('/init', async (req, res) => {
       );
     `);
 
-    // insert default lists ONLY if empty
     const existing = await pool.query(`SELECT COUNT(*) FROM lists`);
 
     if (parseInt(existing.rows[0].count) === 0) {
@@ -206,7 +201,6 @@ app.get('/init', async (req, res) => {
     res.status(500).send(err.message);
   }
 });
-
 app.listen(5000, () => {
   console.log("Server running on http://localhost:5000");
 });
