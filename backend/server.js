@@ -146,6 +146,26 @@ app.post("/save", async (req, res) => {
     res.status(500).send("Error saving data");
   }
 });
+app.get('/init', async (req, res) => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS lists (
+        id SERIAL PRIMARY KEY,
+        name VARCHAR(100)
+      );
+    `);
+
+    await pool.query(`
+      INSERT INTO lists (name)
+      VALUES ('To Do'), ('In Progress'), ('Done');
+    `);
+
+    res.send("DB Initialized");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+});
 
 app.listen(5000, () => {
   console.log("Server running on http://localhost:5000");
