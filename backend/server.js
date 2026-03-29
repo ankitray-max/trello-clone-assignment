@@ -208,6 +208,26 @@ app.get('/init', async (req, res) => {
     res.status(500).send(err.message);
   }
 });
+app.get('/reset', async (req, res) => {
+  try {
+    await pool.query("DELETE FROM card_labels");
+    await pool.query("DELETE FROM cards");
+    await pool.query("DELETE FROM lists");
+
+    await pool.query(`
+      INSERT INTO lists (title, position)
+      VALUES 
+      ('To Do', 0),
+      ('In Progress', 1),
+      ('Done', 2);
+    `);
+
+    res.send("DB Reset Done ✅");
+  } catch (err) {
+    console.error(err);
+    res.status(500).send(err.message);
+  }
+});
 app.listen(5000, () => {
   console.log("Server running on http://localhost:5000");
 });
