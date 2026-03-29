@@ -43,7 +43,9 @@ export const AppStateProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       return; // 🚫 skip first render
     }
 
-    //save(state as AppState);
+    // ✅ NOW SAVE TO BACKEND (THIS WAS MISSING)
+    save(state as AppState);
+
   }, [state]);
 
   const getTasksByListId = (listId: string) => {
