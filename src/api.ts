@@ -1,7 +1,8 @@
 import { AppState } from './state/appStateReducer'
+declare const process: any;
+const API_URL = process.env.REACT_APP_API_URL;
 
-const API_URL = 'http://localhost:5000'
-
+// 🔥 SAVE
 export const save = (payload: AppState) => {
   return fetch(`${API_URL}/save`, {
     method: 'POST',
@@ -18,15 +19,20 @@ export const save = (payload: AppState) => {
       throw new Error("Error while saving state");
     }
   });
-}
+};
 
-export const load = () => {
-  return fetch(`${API_URL}/load`)
-    .then((res) => {
-      if (res.ok) {
-        return res.json() as Promise<AppState>;
-      } else {
-        throw new Error("Error while loading state");
-      }
-    });
-}
+// 🔥 LOAD (with retry)
+export const load = async () => {
+  try {
+    const res = await fetch(`${API_URL}/load`);
+    if (!res.ok) throw new Error("Failed");
+    return await res.json();
+  } catch (err) {
+    console.log("Retrying backend (waking up)...");
+
+    await new Promise(resolve => setTimeout(resolve, 5000));
+
+    const res = await fetch(`${API_URL}/load`);
+    return await res.json();
+  }
+};
