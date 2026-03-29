@@ -91,24 +91,31 @@ app.get("/load", async (req, res) => {
 });
 
 // 🔥 API: save (FIXED)
+// 🔥 API: save (FIXED PROPERLY)
 app.post("/save", async (req, res) => {
   try {
     const { lists } = req.body;
 
-    // ✅ ONLY clear cards (NOT lists)
+    // clear old data
     await pool.query("DELETE FROM card_labels");
     await pool.query("DELETE FROM cards");
 
-    // ✅ ALWAYS use existing lists (NO INSERT)
+    // get DB lists
     const dbLists = await pool.query("SELECT * FROM lists ORDER BY position");
+
+    // 🔥 create mapping (IMPORTANT FIX)
+    const listMap = {};
+    dbLists.rows.forEach((list) => {
+      listMap[list.title] = list.id;
+    });
 
     for (let i = 0; i < lists.length; i++) {
       const list = lists[i];
 
-      // 🔥 map frontend list → DB list by position
-      const listId = dbLists.rows[i]?.id;
+      // ✅ FIX: use title instead of index
+      const listId = listMap[list.text];
 
-      if (!listId) continue; // safety
+      if (!listId) continue;
 
       for (let j = 0; j < list.tasks.length; j++) {
         const task = list.tasks[j];
