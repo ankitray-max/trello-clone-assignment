@@ -148,19 +148,59 @@ app.post("/save", async (req, res) => {
 });
 app.get('/init', async (req, res) => {
   try {
+    // create lists table (correct column name)
     await pool.query(`
       CREATE TABLE IF NOT EXISTS lists (
         id SERIAL PRIMARY KEY,
-        name VARCHAR(100)
+        title VARCHAR(100),
+        position INT DEFAULT 0
       );
     `);
 
+    // create cards table (needed for your app)
     await pool.query(`
-      INSERT INTO lists (name)
-      VALUES ('To Do'), ('In Progress'), ('Done');
+      CREATE TABLE IF NOT EXISTS cards (
+        id SERIAL PRIMARY KEY,
+        title TEXT,
+        description TEXT,
+        due_date TIMESTAMP,
+        list_id INT REFERENCES lists(id),
+        position INT DEFAULT 0
+      );
     `);
 
-    res.send("DB Initialized");
+    // create labels table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS labels (
+        id SERIAL PRIMARY KEY,
+        text VARCHAR(50),
+        color VARCHAR(20)
+      );
+    `);
+
+    // create card_labels table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS card_labels (
+        id SERIAL PRIMARY KEY,
+        card_id INT REFERENCES cards(id),
+        label_id INT REFERENCES labels(id)
+      );
+    `);
+
+    // insert default lists ONLY if empty
+    const existing = await pool.query(`SELECT COUNT(*) FROM lists`);
+
+    if (parseInt(existing.rows[0].count) === 0) {
+      await pool.query(`
+        INSERT INTO lists (title, position)
+        VALUES 
+        ('To Do', 0),
+        ('In Progress', 1),
+        ('Done', 2);
+      `);
+    }
+
+    res.send("DB Initialized ✅");
   } catch (err) {
     console.error(err);
     res.status(500).send(err.message);
